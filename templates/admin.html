@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-robot"></i> Telegram Bot Admin
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home"></i> Bosh sahifa</a>
+                <a class="nav-link" href="/withdrawals"><i class="fas fa-money-bill-wave"></i> Chiqarishlar</a>
+                <a class="nav-link" href="/users"><i class="fas fa-users"></i> Foydalanuvchilar</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% if not page or page == "dashboard" %}
+        <!-- Dashboard -->
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fas fa-chart-line"></i> Admin Panel</h1>
+                <p class="text-muted">Telegram bot statistikasi va boshqaruv paneli</p>
+            </div>
+        </div>
+
+        <!-- Statistika kartochkalari -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Jami foydalanuvchilar</h6>
+                                <h3>{{ total_users }}</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Jami kirimlar</h6>
+                                <h3>{{ total_deposits }} ⭐</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-arrow-down fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Jami chiqimlar</h6>
+                                <h3>{{ total_withdrawals }} ⭐</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-arrow-up fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Kutilayotgan chiqishlar</h6>
+                                <h3>{{ pending_withdrawals }}</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bugungi statistika -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Bugungi yangi foydalanuvchilar</h5>
+                        <h2 class="text-primary">{{ today_users }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Bugungi kirimlar</h5>
+                        <h2 class="text-success">{{ today_deposits }} ⭐</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Bugungi spinlar</h5>
+                        <h2 class="text-info">{{ today_spins }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daromad -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-dark text-white">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">💰 Jami daromad</h4>
+                        <h1 class="text-warning">{{ profit }} ⭐</h1>
+                        <p class="card-text">Kirimlar - Chiqimlar = Daromad</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP foydalanuvchilar -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-trophy"></i> TOP 10 Foydalanuvchi</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Ism</th>
+                                        <th>Jami kiritgan</th>
+                                        <th>Balans</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in top_users %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ user.first_name }}</td>
+                                        <td>{{ format_number(user.total_deposited) }} ⭐</td>
+                                        <td>{{ format_number(user.stars) }} ⭐</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history"></i> So'nggi tranzaksiyalar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Turi</th>
+                                        <th>Miqdor</th>
+                                        <th>Sana</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in recent_transactions %}
+                                    <tr>
+                                        <td>
+                                            {% if transaction.transaction_type == "purchase" %}
+                                            <span class="badge bg-success">Sotib olish</span>
+                                            {% elif transaction.transaction_type == "win" %}
+                                            <span class="badge bg-warning">Yutish</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Chiqarish</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ format_number(transaction.amount) }} ⭐</td>
+                                        <td>{{ transaction.created_at.strftime('%d.%m %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% elif page == "withdrawals" %}
+        <!-- Chiqarishlar sahifasi -->
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fas fa-money-bill-wave"></i> Chiqarish so'rovlari</h1>
+                <p class="text-muted">Foydalanuvchilarning pul yechish so'rovlarini boshqaring</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Foydalanuvchi</th>
+                                <th>Miqdor</th>
+                                <th>Status</th>
+                                <th>So'rov vaqti</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in withdrawal_data %}
+                            <tr>
+                                <td>#{{ item.withdrawal.id }}</td>
+                                <td>
+                                    <strong>{{ item.user.first_name }}</strong><br>
+                                    <small class="text-muted">ID: {{ item.user.telegram_id }}</small>
+                                </td>
+                                <td><strong>{{ format_number(item.withdrawal.amount) }} ⭐</strong></td>
+                                <td>
+                                    {% if item.withdrawal.status == "pending" %}
+                                    <span class="badge bg-warning">Kutilmoqda</span>
+                                    {% elif item.withdrawal.status == "approved" %}
+                                    <span class="badge bg-success">Tasdiqlangan</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Rad etilgan</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.withdrawal.requested_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>
+                                    {% if item.withdrawal.status == "pending" %}
+                                    <button class="btn btn-success btn-sm" onclick="approveWithdrawal({{ item.withdrawal.id }})">
+                                        <i class="fas fa-check"></i> Tasdiqlash
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal({{ item.withdrawal.id }})">
+                                        <i class="fas fa-times"></i> Rad etish
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted">Qayta ishlangan</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% elif page == "users" %}
+        <!-- Foydalanuvchilar sahifasi -->
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fas fa-users"></i> Foydalanuvchilar</h1>
+                <p class="text-muted">Barcha ro'yxatdan o'tgan foydalanuvchilar</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Foydalanuvchi</th>
+                                <th>Balans</th>
+                                <th>Jami kiritgan</th>
+                                <th>Jami yutgan</th>
+                                <th>Jami chiqargan</th>
+                                <th>Ro'yxatdan o'tgan</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user.first_name }} {{ user.last_name or '' }}</strong><br>
+                                    <small class="text-muted">ID: {{ user.telegram_id }}</small>
+                                    {% if user.username %}
+                                    <br><small class="text-info">@{{ user.username }}</small>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ format_number(user.stars) }} ⭐</strong></td>
+                                <td>{{ format_number(user.total_deposited) }} ⭐</td>
+                                <td>{{ format_number(user.total_won) }} ⭐</td>
+                                <td>{{ format_number(user.total_withdrawn) }} ⭐</td>
+                                <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    {% if user.is_banned %}
+                                    <span class="badge bg-danger">Bloklangan</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Faol</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function approveWithdrawal(withdrawalId) {
+            if (confirm('Ushbu chiqish so\'rovini tasdiqlaysizmi?')) {
+                fetch(`/approve_withdrawal/${withdrawalId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Chiqish tasdiqlandi!');
+                        location.reload();
+                    } else {
+                        alert('Xatolik yuz berdi!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Xatolik yuz berdi!');
+                });
+            }
+        }
+
+        function rejectWithdrawal(withdrawalId) {
+            if (confirm('Ushbu chiqish so\'rovini rad etasizmi?')) {
+                fetch(`/reject_withdrawal/${withdrawalId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Chiqish rad etildi!');
+                        location.reload();
+                    } else {
+                        alert('Xatolik yuz berdi!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Xatolik yuz berdi!');
+                });
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setTimeout(() => {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
