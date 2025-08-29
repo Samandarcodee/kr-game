@@ -27,21 +27,22 @@ async def buy_stars_menu(message: Message):
         return
     
     text = """
-⭐ <b>YULDUZ SOTIB OLISH</b>
+🎆 <b>YULDUZ PAKETLARI</b> 🎆
 
-Quyidagi paketlardan birini tanlang:
+💎 <b>Premium yulduz paketlarimizdan birini tanlang:</b>
 
-💰 <b>Mavjud paketlar:</b>
+💰 <b>Mavjud tariflar:</b>
 """
     
     for stars, price in STAR_PACKAGES.items():
         text += f"• {stars} ⭐ = {price} Telegram Stars\n"
     
     text += """
-💡 <b>Eslatma:</b>
-• To'lov Telegram Stars orqali amalga oshiriladi
-• Yulduzlar darhol hisobingizga qo'shiladi
-• Xavfsiz va tezkor to'lov tizimi
+✨ <b>Afzalliklar:</b>
+🚀 To'lov Telegram Stars orqali xavfsiz amalga oshiriladi
+⚡ Yulduzlar bir lahzada hisobingizga qo'shiladi
+🔒 100% ishonchli va tezkor to'lov tizimi
+🎁 Barcha paketlar chegirmasiz, foydali narxlarda!
     """
     
     await message.answer(

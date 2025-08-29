@@ -51,24 +51,24 @@ Admin tez orada ko'rib chiqadi.
             return
         
         withdrawal_text = f"""
-💸 <b>PUL YECHISH</b>
+💸 <b>PUL CHIQARISH BO'LIMI</b> 💸
 
-⭐ Joriy balans: <b>{format_number(user.stars)} yulduz</b>
-💰 Jami yechib olgan: {format_number(user.total_withdrawn)} ⭐
+💰 <b>Sizning balansingiz:</b> <b>{format_number(user.stars)} yulduz</b>
+🎁 <b>Jami yechib olgan:</b> {format_number(user.total_withdrawn)} ⭐
 
-📋 <b>Chiqarish shartlari:</b>
-• Minimal miqdor: {MIN_WITHDRAWAL} ⭐
-• Admin tasdiqlashdan so'ng beriladi
-• 24 soat ichida qayta ishlanadi
-• Telegram orqali to'lov qilinadi
+📈 <b>Chiqarish shartlari:</b>
+✨ Minimal miqdor: {MIN_WITHDRAWAL} ⭐
+🕰 Admin tasdiqlash: 24 soat ichida
+🚀 To'lov Telegram Stars orqali
+🔒 Xavfsiz va ishonchli tizim
 
-💡 <b>Eslatma:</b>
-Chiqarish so'rovi yuborilgandan so'ng,
-yulduzlar vaqtincha bloklanadi.
+💡 <b>Muhim eslatma:</b>
+So'rov yuborilgach, yulduzlar vaqtincha
+bloklanadi va admin tasdiqlashini kutadi.
         """
         
         if user.stars < MIN_WITHDRAWAL:
-            withdrawal_text += f"\n❌ <b>Yetarli balans yo'q!</b>\nKerak: {MIN_WITHDRAWAL} ⭐"
+            withdrawal_text += f"\n⚠️ <b>Balans yetarli emas!</b>\n🎯 Minimal miqdor: {MIN_WITHDRAWAL} ⭐\n💪 Ko'proq o'ynab, balansni oshiring!"
             await message.answer(withdrawal_text, parse_mode="HTML")
             return
         

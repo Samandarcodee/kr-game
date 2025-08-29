@@ -76,22 +76,22 @@ async def get_or_create_user(db: AsyncSession, telegram_user) -> User:
 async def show_main_menu(message: Message, user: User):
     """Asosiy menyuni ko'rsatish"""
     welcome_text = f"""
-🎰 <b>YULDUZLI O'YIN BOTIGA XUSH KELIBSIZ!</b> 🎰
+🌟 <b>PREMIUM O'YIN BOTIGA XUSH KELIBSIZ!</b> 🌟
 
-Assalomu alaykum, {user.first_name}!
+👋 Assalomu alaykum, hurmatli {user.first_name}!
 
-Bu bot orqali siz:
-⭐ Yulduz sotib olishingiz
-🎰 Qiziqarli o'yinlar o'ynashingiz  
-💰 Yutgan yulduzlaringizni chiqarib olishingiz mumkin
+✨ <b>Bizning bot orqali siz:</b>
+💫 Yulduzlar sotib olishingiz
+🎯 Hayajonli o'yinlar o'ynashingiz
+💸 Yutgan pullaringizni chiqarib olishingiz mumkin
 
-📊 <b>Sizning ma'lumotlaringiz:</b>
-💎 Daraja: {get_user_rank(user.total_deposited)}
-⭐ Balans: {format_number(user.stars)} yulduz
-💰 Jami kiritgan: {format_number(user.total_deposited)} yulduz
-🎉 Jami yutgan: {format_number(user.total_won)} yulduz
+📈 <b>Shaxsiy ma'lumotlaringiz:</b>
+🏆 Darajangiz: {get_user_rank(user.total_deposited)}
+💰 Joriy balans: <b>{format_number(user.stars)}</b> yulduz
+📊 Jami kiritgan: <b>{format_number(user.total_deposited)}</b> yulduz
+🎁 Jami yutgan: <b>{format_number(user.total_won)}</b> yulduz
 
-Boshlash uchun quyidagi tugmalardan birini tanlang:
+🚀 <b>O'yinni boshlash uchun quyidagi bo'limlardan birini tanlang:</b>
     """
     
     await message.answer(
@@ -283,22 +283,22 @@ async def check_subscription_handler(callback: CallbackQuery):
 async def show_main_menu_from_callback(callback: CallbackQuery, user: User):
     """Callback orqali asosiy menyuni ko'rsatish"""
     welcome_text = f"""
-🎰 <b>YULDUZLI O'YIN BOTIGA XUSH KELIBSIZ!</b> 🎰
+🌟 <b>PREMIUM O'YIN BOTIGA XUSH KELIBSIZ!</b> 🌟
 
-Assalomu alaykum, {user.first_name}!
+👋 Assalomu alaykum, hurmatli {user.first_name}!
 
-Bu bot orqali siz:
-⭐ Yulduz sotib olishingiz
-🎰 Qiziqarli o'yinlar o'ynashingiz  
-💰 Yutgan yulduzlaringizni chiqarib olishingiz mumkin
+✨ <b>Bizning bot orqali siz:</b>
+💫 Yulduzlar sotib olishingiz
+🎯 Hayajonli o'yinlar o'ynashingiz
+💸 Yutgan pullaringizni chiqarib olishingiz mumkin
 
-📊 <b>Sizning ma'lumotlaringiz:</b>
-💎 Daraja: {get_user_rank(user.total_deposited)}
-⭐ Balans: {format_number(user.stars)} yulduz
-💰 Jami kiritgan: {format_number(user.total_deposited)} yulduz
-🎉 Jami yutgan: {format_number(user.total_won)} yulduz
+📈 <b>Shaxsiy ma'lumotlaringiz:</b>
+🏆 Darajangiz: {get_user_rank(user.total_deposited)}
+💰 Joriy balans: <b>{format_number(user.stars)}</b> yulduz
+📊 Jami kiritgan: <b>{format_number(user.total_deposited)}</b> yulduz
+🎁 Jami yutgan: <b>{format_number(user.total_won)}</b> yulduz
 
-Boshlash uchun quyidagi tugmalardan birini tanlang:
+🚀 <b>O'yinni boshlash uchun quyidagi bo'limlardan birini tanlang:</b>
     """
     
     await callback.message.answer(
