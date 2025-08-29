@@ -16,6 +16,7 @@ class User(Base):
     total_won: Mapped[int] = mapped_column(Integer, default=0)
     total_withdrawn: Mapped[int] = mapped_column(Integer, default=0)
     is_banned: Mapped[bool] = mapped_column(Boolean, default=False)
+    captcha_passed: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     
     # Relationships

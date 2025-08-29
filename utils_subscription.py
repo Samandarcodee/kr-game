@@ -1,5 +1,4 @@
 from aiogram import Bot
-from aiogram.types import ChatMemberStatus
 from config import REQUIRED_CHANNEL_ID, REQUIRED_CHANNEL
 
 async def check_subscription(bot: Bot, user_id: int) -> bool:
@@ -8,7 +7,7 @@ async def check_subscription(bot: Bot, user_id: int) -> bool:
     """
     try:
         member = await bot.get_chat_member(chat_id=REQUIRED_CHANNEL_ID, user_id=user_id)
-        return member.status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR]
+        return member.status in ["member", "administrator", "creator"]
     except Exception as e:
         print(f"Subscription check error: {e}")
         return False
