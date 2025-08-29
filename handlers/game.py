@@ -25,26 +25,34 @@ async def game_menu(message: Message):
             return
         
         game_text = f"""
-🎰 <b>SLOT MACHINE O'YIN</b>
+╔═══════════════════════════╗
+║     🎰 <b>SLOT MACHINE</b> 🎰      ║
+║       <b>PREMIUM O'YIN</b>         ║
+╚═══════════════════════════╝
 
-⭐ Joriy balans: <b>{format_number(user.stars)} yulduz</b>
+💰 <b>Joriy balans:</b> {format_number(user.stars)} ⭐
 
 🎯 <b>O'yin qoidalari:</b>
-• 1 ⭐ = 1 spin
-• 3 ta bir xil belgi chiqsa - YUTISH! 🎉
-• Har xil belgilar uchun turli multiplier
+┌─────────────────────────┐
+│ 💸 1 ⭐ = 1 spin        │
+│ 🎊 40% yutuq ehtimoli   │
+│ 🏆 3 ta bir xil = WIN!  │
+└─────────────────────────┘
 
 💎 <b>Yutuq jadvali:</b>
-💎💎💎 = x10 (Olmos)
-⭐⭐⭐ = x8 (Yulduz)
-🔔🔔🔔 = x6 (Qo'ng'iroq)
-🍒🍒🍒 = x5 (Gilos)
-🍇🍇🍇 = x4 (Uzum)
-🍋🍋🍋 = x3 (Limon)
-🍊🍊🍊 = x2.5 (Apelsin)
-🍎🍎🍎 = x2 (Olma)
+🥇 💎💎💎 = x10 (JACKPOT!)
+🥈 ⭐⭐⭐ = x8 (Yulduz)
+🥉 🔔🔔🔔 = x6 (Qo'ng'iroq)
+   🍒🍒🍒 = x5 (Gilos)
+   🍇🍇🍇 = x4 (Uzum)
+   🍋🍋🍋 = x3 (Limon)
+   🍊🍊🍊 = x2.5 (Apelsin)
+   🍎🍎🍎 = x2 (Olma)
 
-Omadingizni sinab ko'ring! 🍀
+📈 <b>Admin foydasi:</b> 60%
+🎁 <b>Sizning ulushingiz:</b> 40%
+
+🍀 Omadingizni sinab ko'ring!
         """
         
         await message.answer(
@@ -128,43 +136,61 @@ async def process_spin(callback: CallbackQuery):
         print(f"Spin error: {e}")
 
 async def show_spin_result(callback, bet_amount, win_amount, result_type, multiplier, new_balance, symbols):
-    """Spin natijasini ko'rsatish"""
-    emoji = get_spin_emoji(result_type)
+    """Spin natijasini chiroyli ko'rsatish"""
     
-    # Symbollarni ko'rsatish
-    symbols_display = " | ".join(symbols)
+    # Animatsiyali spin natijasi
+    symbols_display = f"🎰 【 {symbols[0]} 】【 {symbols[1]} 】【 {symbols[2]} 】 🎰"
     
     if result_type == "win":
+        # Yutish emoji va ranglar
+        win_emojis = ["🎉", "🥳", "🎊", "💰", "✨", "🌟"]
+        emoji = random.choice(win_emojis)
+        
         result_text = f"""
-{emoji} <b>TABRIKLAYMIZ! SIZ YUTDINGIZ!</b> {emoji}
+╔═══════════════════════════╗
+║   🎊 <b>TABRIKLAYMIZ!</b> 🎊         ║
+║        <b>SIZ YUTDINGIZ!</b>         ║
+╚═══════════════════════════╝
 
-🎰 <b>Natija:</b>
-[ {symbols_display} ]
+{symbols_display}
 
-🎉 <b>3 ta bir xil belgi!</b>
-💰 Pul tikdingiz: {format_number(bet_amount)} ⭐
-🎉 Yutdingiz: <b>{format_number(win_amount)} ⭐</b>
-📈 Ko'payish: <b>x{multiplier:.1f}</b>
-💸 Foyda: <b>+{format_number(win_amount - bet_amount)} ⭐</b>
+🏆 <b>JACKPOT!</b> 3 ta bir xil belgi! {emoji}
+
+┌─────────────────────────┐
+│ 💰 Tikdingiz: {bet_amount} ⭐
+│ 🎉 Yutdingiz: <b>{format_number(win_amount)} ⭐</b>
+│ 📈 Multiplier: <b>x{multiplier:.1f}</b>
+│ 💸 Sof foyda: <b>+{format_number(win_amount - bet_amount)} ⭐</b>
+└─────────────────────────┘
 
 ⭐ <b>Yangi balans:</b> {format_number(new_balance)} yulduz
 
-Yana o'ynaysizmi? 🎲
+{emoji} Omadingiz davom etsin! Yana o'ynang! {emoji}
         """
     else:
+        # Yutqazish emoji
+        lose_emojis = ["😔", "💔", "😢", "🤷‍♂️"]
+        emoji = random.choice(lose_emojis)
+        
         result_text = f"""
-{emoji} <b>AFSUSKI, BU SAFAR YUTQAZDINGIZ</b> {emoji}
+╔═══════════════════════════╗
+║      {emoji} <b>BU SAFAR...</b> {emoji}         ║
+║       <b>YUTQAZDINGIZ</b>          ║
+╚═══════════════════════════╝
 
-🎰 <b>Natija:</b>
-[ {symbols_display} ]
+{symbols_display}
 
-💔 Bir xil belgilar chiqmadi
-💰 Pul tikdingiz: {format_number(bet_amount)} ⭐
-📉 Yo'qotish: -{format_number(bet_amount)} ⭐
+💭 Bir xil belgilar chiqmadi...
+
+┌─────────────────────────┐
+│ 💰 Tikdingiz: {bet_amount} ⭐
+│ 📉 Yo'qotdingiz: -{bet_amount} ⭐
+│ 🎯 Ehtimollik: 40% yutuq
+└─────────────────────────┘
 
 ⭐ <b>Yangi balans:</b> {format_number(new_balance)} yulduz
 
-Yana urinib ko'ring! Omad sizga yuz beradi! 🍀
+🍀 Keyingi safar omad sizga yuz beradi!
         """
     
     await callback.message.edit_text(

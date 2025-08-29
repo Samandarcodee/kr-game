@@ -30,20 +30,31 @@ def calculate_multiplier(symbols: List[str]) -> float:
 
 def calculate_spin_result(bet_amount: int) -> Tuple[int, str, float, List[str]]:
     """
-    Spin natijasini hisoblash
+    Spin natijasini hisoblash - 40% g'alaba ehtimoli
     Returns: (win_amount, result_type, multiplier, symbols)
     """
-    # 3 ta symbol generatsiya qilish
-    symbols = generate_slot_result()
+    # 40% ehtimollik bilan g'alaba
+    win_chance = 0.40  # 40% foydalanuvchi uchun, 60% admin foydasi
     
-    # 3 ta bir xil belgi tekshirish
-    if check_win(symbols):
+    if random.random() < win_chance:
+        # G'alaba holati - bir xil belgilarni generatsiya qilish
+        winning_symbol = random.choice(SLOT_SYMBOLS)
+        symbols = [winning_symbol] * 3
         multiplier = calculate_multiplier(symbols)
         win_amount = int(bet_amount * multiplier)
         return win_amount, "win", multiplier, symbols
     else:
-        # Yutqazish
+        # Yutqazish - turli belgilarni generatsiya qilish
+        symbols = generate_mixed_symbols()
         return 0, "lose", 0.0, symbols
+
+def generate_mixed_symbols() -> List[str]:
+    """Har xil belgilar generatsiya qilish (yutqazish uchun)"""
+    symbols = random.sample(SLOT_SYMBOLS, 3)
+    # Agar tasodifan bir xil bo'lib qolsa, bitta o'zgartirish
+    if len(set(symbols)) == 1:
+        symbols[1] = random.choice([s for s in SLOT_SYMBOLS if s != symbols[0]])
+    return symbols
 
 def format_number(number: int) -> str:
     """Raqamni formatlash"""
