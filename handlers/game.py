@@ -70,8 +70,12 @@ async def process_spin(callback: CallbackQuery):
                 )
                 return
             
-            # Spin natijasini hisoblash
-            win_amount, result_type, multiplier, symbols = calculate_spin_result(bet_amount)
+            # Spin natijasini hisoblash (foydalanuvchi statistikasi bilan)
+            win_amount, result_type, multiplier, symbols = calculate_spin_result(
+                bet_amount, 
+                user.total_deposited, 
+                user.total_won
+            )
             
             # Balansni yangilash
             user.stars -= bet_amount

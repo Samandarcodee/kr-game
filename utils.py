@@ -28,20 +28,44 @@ def calculate_multiplier(symbols: List[str]) -> float:
     }
     return multipliers.get(symbol, 2.0)
 
-def calculate_spin_result(bet_amount: int) -> Tuple[int, str, float, List[str]]:
+def calculate_spin_result(bet_amount: int, total_user_deposit: int = 0, total_user_won: int = 0) -> Tuple[int, str, float, List[str]]:
     """
-    Spin natijasini hisoblash - 40% g'alaba ehtimoli
+    Yangi algoritm - admin 60% foyda oladi, foydalanuvchi maksimal 40% qaytaradi
     Returns: (win_amount, result_type, multiplier, symbols)
     """
-    # 40% ehtimollik bilan g'alaba
-    win_chance = 0.40  # 40% foydalanuvchi uchun, 60% admin foydasi
+    # Foydalanuvchining netto yo'qotishi
+    user_net_loss = total_user_deposit - total_user_won
+    
+    # Admin 60% foyda olishi kerak, foydalanuvchi maksimal 40% qaytarishi mumkin
+    max_user_return = total_user_deposit * 0.4
+    
+    # Dinamik yutish ehtimoli
+    if total_user_won >= max_user_return:
+        # Agar foydalanuvchi allaqachon ko'p yutgan bo'lsa - juda kam imkoniyat
+        win_chance = 0.05  # 5%
+    elif user_net_loss < 0:  # Foydalanuvchi foyda ko'rgan
+        # Kam yutish imkoniyati
+        win_chance = 0.10  # 10%
+    else:
+        # Oddiy yutish imkoniyati  
+        win_chance = 0.20  # 20%
     
     if random.random() < win_chance:
         # G'alaba holati - bir xil belgilarni generatsiya qilish
         winning_symbol = random.choice(SLOT_SYMBOLS)
         symbols = [winning_symbol] * 3
-        multiplier = calculate_multiplier(symbols)
+        # Kichik multiplierlar (admin foydasini saqlash uchun)
+        multipliers = [1.2, 1.5, 2.0, 2.5]
+        weights = [60, 25, 12, 3]  # Kichik multiplierlar ko'proq
+        
+        multiplier = random.choices(multipliers, weights=weights)[0]
         win_amount = int(bet_amount * multiplier)
+        
+        # Agar yutish admin foydasini buzsa, kamaytirish
+        potential_total_won = total_user_won + win_amount
+        if potential_total_won > max_user_return:
+            multiplier = 1.1  # Minimal yutish
+            win_amount = int(bet_amount * multiplier)
         return win_amount, "win", multiplier, symbols
     else:
         # Yutqazish - turli belgilarni generatsiya qilish
