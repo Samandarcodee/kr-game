@@ -1,21 +1,49 @@
 import random
-from typing import Tuple
+from typing import Tuple, List
 from config import RETURN_RATE
 
-def calculate_spin_result(bet_amount: int) -> Tuple[int, str, float]:
+# Slot machine symbols
+SLOT_SYMBOLS = ["🍎", "🍊", "🍋", "🍇", "🍒", "🔔", "💎", "⭐"]
+
+def generate_slot_result() -> List[str]:
+    """3 ta symbol generatsiya qilish"""
+    return [random.choice(SLOT_SYMBOLS) for _ in range(3)]
+
+def check_win(symbols: List[str]) -> bool:
+    """3 ta bir xil belgi tekshirish"""
+    return len(set(symbols)) == 1
+
+def calculate_multiplier(symbols: List[str]) -> float:
+    """Symbol turiga qarab multiplier hisoblash"""
+    symbol = symbols[0]
+    multipliers = {
+        "💎": 10.0,  # Olmos - eng yuqori
+        "⭐": 8.0,   # Yulduz
+        "🔔": 6.0,   # Qo'ng'iroq
+        "🍒": 5.0,   # Gilos
+        "🍇": 4.0,   # Uzum
+        "🍋": 3.0,   # Limon
+        "🍊": 2.5,   # Apelsin
+        "🍎": 2.0    # Olma
+    }
+    return multipliers.get(symbol, 2.0)
+
+def calculate_spin_result(bet_amount: int) -> Tuple[int, str, float, List[str]]:
     """
     Spin natijasini hisoblash
-    Returns: (win_amount, result_type, multiplier)
+    Returns: (win_amount, result_type, multiplier, symbols)
     """
-    # 30% ehtimollik bilan g'alaba
-    if random.random() < RETURN_RATE:
-        # G'alaba multiplier: 1.5x dan 5x gacha
-        multiplier = random.uniform(1.5, 5.0)
+    # 3 ta symbol generatsiya qilish
+    symbols = generate_slot_result()
+    
+    # 3 ta bir xil belgi tekshirish
+    if check_win(symbols):
+        multiplier = calculate_multiplier(symbols)
         win_amount = int(bet_amount * multiplier)
-        return win_amount, "win", multiplier
+        return win_amount, "win", multiplier, symbols
     else:
         # Yutqazish
-        return 0, "lose", 0.0
+        return 0, "lose", 0.0, symbols
 
 def format_number(number: int) -> str:
     """Raqamni formatlash"""

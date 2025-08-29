@@ -33,9 +33,7 @@ def get_spin_keyboard():
     """Spin o'ynash klaviaturasi"""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🎰 Spin (10 ⭐)", callback_data="spin_10")],
-            [InlineKeyboardButton(text="🎰 Spin (25 ⭐)", callback_data="spin_25")],
-            [InlineKeyboardButton(text="🎰 Spin (50 ⭐)", callback_data="spin_50")],
+            [InlineKeyboardButton(text="🎰 Spin (1 ⭐)", callback_data="spin_1")],
             [InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_menu")]
         ]
     )

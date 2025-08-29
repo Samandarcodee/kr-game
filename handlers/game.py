@@ -25,19 +25,24 @@ async def game_menu(message: Message):
             return
         
         game_text = f"""
-🎰 <b>YULDUZLI O'YIN</b>
+🎰 <b>SLOT MACHINE O'YIN</b>
 
 ⭐ Joriy balans: <b>{format_number(user.stars)} yulduz</b>
 
 🎯 <b>O'yin qoidalari:</b>
-• Har bir spinda 30% g'alaba imkoniyati
-• G'alaba qilsangiz 1.5x dan 5x gacha ko'payish
-• Adolatli va tasodifiy natijalar
+• 1 ⭐ = 1 spin
+• 3 ta bir xil belgi chiqsa - YUTISH! 🎉
+• Har xil belgilar uchun turli multiplier
 
-💡 <b>Spin narxlari:</b>
-• 10 ⭐ - Oddiy spin
-• 25 ⭐ - O'rtacha spin  
-• 50 ⭐ - Katta spin
+💎 <b>Yutuq jadvali:</b>
+💎💎💎 = x10 (Olmos)
+⭐⭐⭐ = x8 (Yulduz)
+🔔🔔🔔 = x6 (Qo'ng'iroq)
+🍒🍒🍒 = x5 (Gilos)
+🍇🍇🍇 = x4 (Uzum)
+🍋🍋🍋 = x3 (Limon)
+🍊🍊🍊 = x2.5 (Apelsin)
+🍎🍎🍎 = x2 (Olma)
 
 Omadingizni sinab ko'ring! 🍀
         """
@@ -76,7 +81,7 @@ async def process_spin(callback: CallbackQuery):
                 return
             
             # Spin natijasini hisoblash
-            win_amount, result_type, multiplier = calculate_spin_result(bet_amount)
+            win_amount, result_type, multiplier, symbols = calculate_spin_result(bet_amount)
             
             # Balansni yangilash
             user.stars -= bet_amount
@@ -114,25 +119,32 @@ async def process_spin(callback: CallbackQuery):
                 win_amount, 
                 result_type, 
                 multiplier, 
-                user.stars
+                user.stars,
+                symbols
             )
             
     except Exception as e:
         await callback.answer("❌ Xatolik yuz berdi", show_alert=True)
         print(f"Spin error: {e}")
 
-async def show_spin_result(callback, bet_amount, win_amount, result_type, multiplier, new_balance):
+async def show_spin_result(callback, bet_amount, win_amount, result_type, multiplier, new_balance, symbols):
     """Spin natijasini ko'rsatish"""
     emoji = get_spin_emoji(result_type)
+    
+    # Symbollarni ko'rsatish
+    symbols_display = " | ".join(symbols)
     
     if result_type == "win":
         result_text = f"""
 {emoji} <b>TABRIKLAYMIZ! SIZ YUTDINGIZ!</b> {emoji}
 
-🎰 <b>Spin natijalari:</b>
+🎰 <b>Natija:</b>
+[ {symbols_display} ]
+
+🎉 <b>3 ta bir xil belgi!</b>
 💰 Pul tikdingiz: {format_number(bet_amount)} ⭐
 🎉 Yutdingiz: <b>{format_number(win_amount)} ⭐</b>
-📈 Ko'payish: <b>x{multiplier:.2f}</b>
+📈 Ko'payish: <b>x{multiplier:.1f}</b>
 💸 Foyda: <b>+{format_number(win_amount - bet_amount)} ⭐</b>
 
 ⭐ <b>Yangi balans:</b> {format_number(new_balance)} yulduz
@@ -143,9 +155,11 @@ Yana o'ynaysizmi? 🎲
         result_text = f"""
 {emoji} <b>AFSUSKI, BU SAFAR YUTQAZDINGIZ</b> {emoji}
 
-🎰 <b>Spin natijalari:</b>
+🎰 <b>Natija:</b>
+[ {symbols_display} ]
+
+💔 Bir xil belgilar chiqmadi
 💰 Pul tikdingiz: {format_number(bet_amount)} ⭐
-💔 Natija: Yutqazish
 📉 Yo'qotish: -{format_number(bet_amount)} ⭐
 
 ⭐ <b>Yangi balans:</b> {format_number(new_balance)} yulduz
@@ -174,11 +188,11 @@ async def spin_again(callback: CallbackQuery):
             return
         
         game_text = f"""
-🎰 <b>YULDUZLI O'YIN</b>
+🎰 <b>SLOT MACHINE O'YIN</b>
 
 ⭐ Joriy balans: <b>{format_number(user.stars)} yulduz</b>
 
-Qaysi miqdorda spin qilmoqchisiz?
+Yana spin qilmoqchimisiz? Har bir spin 1 ⭐
         """
         
         await callback.message.edit_text(
