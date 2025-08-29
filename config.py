@@ -39,3 +39,6 @@ ADMIN_PORT = 8000
 # Channel configuration
 REQUIRED_CHANNEL = "@premiu_m002"
 REQUIRED_CHANNEL_ID = "@premiu_m002"  # Channel username ishlatamiz
+
+# Bot username for referral links
+BOT_USERNAME = "Kr_gamee_bot"  # @Kr_gamee_bot ning username qismi

@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, CommandObject
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,10 +14,18 @@ from utils_subscription import check_subscription, get_subscription_message, get
 router = Router()
 
 @router.message(CommandStart())
-async def start_handler(message: Message):
+async def start_handler(message: Message, command: CommandObject = None):
     """Bot ishga tushganida - captcha va obuna tekshiruvi"""
+    # Referal parametrini olish
+    referrer_id = None
+    if command and command.args and command.args.startswith('ref_'):
+        try:
+            referrer_id = int(command.args.replace('ref_', ''))
+        except ValueError:
+            referrer_id = None
+    
     async for db in get_db():
-        user = await get_or_create_user(db, message.from_user)
+        user = await get_or_create_user(db, message.from_user, referrer_id)
         
         # Agar user yangi bo'lsa yoki captcha o'tmagan bo'lsa
         if not hasattr(user, 'captcha_passed') or not user.captcha_passed:
@@ -51,7 +59,7 @@ async def start_handler(message: Message):
         # Agar captcha o'tgan va obuna bo'lgan bo'lsa - asosiy menyu
         await show_main_menu(message, user)
 
-async def get_or_create_user(db: AsyncSession, telegram_user) -> User:
+async def get_or_create_user(db: AsyncSession, telegram_user, referrer_id=None) -> User:
     """Foydalanuvchini olish yoki yaratish"""
     result = await db.execute(
         select(User).where(User.telegram_id == telegram_user.id)
@@ -63,6 +71,7 @@ async def get_or_create_user(db: AsyncSession, telegram_user) -> User:
             telegram_id=telegram_user.id,
             username=telegram_user.username,
             first_name=telegram_user.first_name or "Noma'lum",
+            referrer_id=referrer_id,
             last_name=telegram_user.last_name
         )
         # Yangi user uchun captcha_passed = False

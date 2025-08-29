@@ -8,6 +8,7 @@ def get_main_menu_keyboard():
             [KeyboardButton(text="🎰 O'yin o'ynash")],
             [KeyboardButton(text="⭐ Yulduz sotib olish"), KeyboardButton(text="💰 Balansim")],
             [KeyboardButton(text="📊 Statistika"), KeyboardButton(text="💸 Pul yechish")],
+            [KeyboardButton(text="👥 Do'stlarni taklif qilish")],
             [KeyboardButton(text="🆘 Yordam")]
         ],
         resize_keyboard=True,
@@ -57,6 +58,17 @@ def get_support_keyboard():
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="💬 Admin bilan yozishish", callback_data="contact_admin")],
+            [InlineKeyboardButton(text="🔙 Asosiy menyu", callback_data="back_to_main")]
+        ]
+    )
+    return keyboard
+
+def get_referral_keyboard(referral_link):
+    """Referal bo'limi klaviaturasi"""
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📋 Linkni nusxalash", callback_data="copy_referral_link")],
+            [InlineKeyboardButton(text="📤 Do'stlarga yuborish", url=f"https://t.me/share/url?url={referral_link}&text=Menga%20qo'shiling%20va%20bepul%20yulduzlar%20oling!%20🌟")],
             [InlineKeyboardButton(text="🔙 Asosiy menyu", callback_data="back_to_main")]
         ]
     )

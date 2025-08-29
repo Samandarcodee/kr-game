@@ -9,6 +9,7 @@ from database import init_db
 from handlers import start, payments, game, admin
 from handlers.withdrawals import router as withdrawal_router
 from handlers.support import router as support_router
+from handlers.referral import router as referral_router
 
 # Logging sozlash
 logging.basicConfig(
@@ -30,6 +31,7 @@ dp.include_router(payments.router)
 dp.include_router(game.router)
 dp.include_router(withdrawal_router)
 dp.include_router(support_router)
+dp.include_router(referral_router)
 dp.include_router(admin.router)
 
 async def main():

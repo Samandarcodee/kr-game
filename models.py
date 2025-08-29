@@ -17,6 +17,12 @@ class User(Base):
     total_withdrawn: Mapped[int] = mapped_column(Integer, default=0)
     is_banned: Mapped[bool] = mapped_column(Boolean, default=False)
     captcha_passed: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    # Referal tizimi
+    referrer_id: Mapped[int] = mapped_column(BigInteger, nullable=True)  # Kim taklif qilgan
+    total_referrals: Mapped[int] = mapped_column(Integer, default=0)  # Nechta kishi taklif qilgan
+    referral_earnings: Mapped[int] = mapped_column(Integer, default=0)  # Referal orqali topgan yulduzlar
+    
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     
     # Relationships

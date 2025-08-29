@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from models import User, Transaction
+from handlers.referral import process_referral_bonus
 from keyboards import get_star_purchase_keyboard
 from config import STAR_PACKAGES, PAYMENT_PROVIDER_TOKEN
 from utils import format_number, generate_transaction_id
@@ -125,6 +126,10 @@ async def successful_payment_handler(message: Message):
             # Balansni yangilash
             user.stars += stars_amount
             user.total_deposited += stars_amount
+            
+            # Referal bonusini tekshirish va berish
+            if user.referrer_id:
+                await process_referral_bonus(user.referrer_id, user.telegram_id)
             
             # Tranzaksiyani saqlash
             transaction = Transaction(
