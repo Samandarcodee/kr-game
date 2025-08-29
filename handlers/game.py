@@ -25,14 +25,9 @@ async def game_menu(message: Message):
             return
         
         game_text = f"""
-🎰 <b>SLOT MACHINE O'YIN</b> 🎰
+🎰 <b>O'YIN</b> 🎰
 
 💰 <b>Balans:</b> {format_number(user.stars)} ⭐
-🎯 <b>1 ⭐ = 1 spin | 40% yutuq ehtimoli</b>
-
-💎 <b>Yutuq jadvali:</b>
-💎💎💎=x10 | ⭐⭐⭐=x8 | 🔔🔔🔔=x6
-🍒🍒🍒=x5 | 🍇🍇🍇=x4 | 🍋🍋🍋=x3
 
 🍀 <b>Omadingizni sinab ko'ring!</b>
         """
@@ -44,9 +39,9 @@ async def game_menu(message: Message):
         )
         
         # Game message ID ni saqlash (oddiy holatda global dict)
-        if not hasattr(show_game_menu, 'game_messages'):
-            show_game_menu.game_messages = {}
-        show_game_menu.game_messages[user.telegram_id] = game_msg.message_id
+        if not hasattr(game_menu, 'game_messages'):
+            game_menu.game_messages = {}
+        game_menu.game_messages[user.telegram_id] = game_msg.message_id
 
 @router.callback_query(F.data.startswith("spin_"))
 async def process_spin(callback: CallbackQuery):
@@ -129,36 +124,26 @@ async def show_spin_result(callback, bet_amount, win_amount, result_type, multip
     symbols_display = f"🎰 【 {symbols[0]} 】【 {symbols[1]} 】【 {symbols[2]} 】 🎰"
     
     if result_type == "win":
-        # Yutish natijasi - qisqa formatda
+        # Yutish natijasi - faqat zarur ma'lumotlar
         result_text = f"""
-🎰 <b>SLOT MACHINE O'YIN</b> 🎰
+🎰 <b>O'YIN</b> 🎰
 
 💰 <b>Balans:</b> {format_number(new_balance)} ⭐
-🎯 <b>1 ⭐ = 1 spin | 40% yutuq ehtimoli</b>
-
-💎 <b>Yutuq jadvali:</b>
-💎💎💎=x10 | ⭐⭐⭐=x8 | 🔔🔔🔔=x6
-🍒🍒🍒=x5 | 🍇🍇🍇=x4 | 🍋🍋🍋=x3
 
 {symbols_display}
 
-🎉 <b>YUTDINGIZ!</b> +{win_amount} ⭐ (x{multiplier:.1f})
+🎉 <b>YUTDINGIZ!</b> +{win_amount} ⭐
         """
     else:
-        # Yutqazish natijasi - qisqa formatda
+        # Yutqazish natijasi - faqat zarur ma'lumotlar
         result_text = f"""
-🎰 <b>SLOT MACHINE O'YIN</b> 🎰
+🎰 <b>O'YIN</b> 🎰
 
 💰 <b>Balans:</b> {format_number(new_balance)} ⭐
-🎯 <b>1 ⭐ = 1 spin | 40% yutuq ehtimoli</b>
-
-💎 <b>Yutuq jadvali:</b>
-💎💎💎=x10 | ⭐⭐⭐=x8 | 🔔🔔🔔=x6
-🍒🍒🍒=x5 | 🍇🍇🍇=x4 | 🍋🍋🍋=x3
 
 {symbols_display}
 
-😔 <b>Yutqazdingiz...</b> Yana urinib ko'ring!
+😔 <b>Yutqazdingiz</b> -{bet_amount} ⭐
         """
     
     await callback.message.edit_text(
