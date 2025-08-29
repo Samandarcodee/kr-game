@@ -38,4 +38,4 @@ ADMIN_PORT = 8000
 
 # Channel configuration
 REQUIRED_CHANNEL = "@premiu_m002"
-REQUIRED_CHANNEL_ID = -1002374607763  # Channel ID
+REQUIRED_CHANNEL_ID = "@premiu_m002"  # Channel username ishlatamiz
