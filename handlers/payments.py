@@ -8,12 +8,24 @@ from models import User, Transaction
 from keyboards import get_star_purchase_keyboard
 from config import STAR_PACKAGES, PAYMENT_PROVIDER_TOKEN
 from utils import format_number, generate_transaction_id
+from utils_subscription import check_subscription, get_subscription_message, get_subscription_keyboard
 
 router = Router()
 
 @router.message(F.text == "⭐ Yulduz sotib olish")
 async def buy_stars_menu(message: Message):
     """Yulduz sotib olish menyusi"""
+    # Obuna tekshirish
+    is_subscribed = await check_subscription(message.bot, message.from_user.id)
+    
+    if not is_subscribed:
+        await message.answer(
+            get_subscription_message(),
+            reply_markup=get_subscription_keyboard(),
+            parse_mode="HTML"
+        )
+        return
+    
     text = """
 ⭐ <b>YULDUZ SOTIB OLISH</b>
 
@@ -42,6 +54,18 @@ Quyidagi paketlardan birini tanlang:
 async def process_star_purchase(callback: CallbackQuery):
     """Yulduz sotib olish jarayoni"""
     try:
+        # Obuna tekshirish
+        is_subscribed = await check_subscription(callback.bot, callback.from_user.id)
+        
+        if not is_subscribed:
+            await callback.message.edit_text(
+                get_subscription_message(),
+                reply_markup=get_subscription_keyboard(),
+                parse_mode="HTML"
+            )
+            await callback.answer("❌ Avval kanalga obuna bo'ling!", show_alert=True)
+            return
+        
         stars_amount = int(callback.data.split("_")[2])
         price = STAR_PACKAGES.get(stars_amount)
         

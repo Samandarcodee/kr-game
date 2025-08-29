@@ -35,3 +35,7 @@ WEBHOOK_URL = f"https://{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
 # Admin panel configuration
 ADMIN_PORT = 8000
+
+# Channel configuration
+REQUIRED_CHANNEL = "@premiu_m002"
+REQUIRED_CHANNEL_ID = -1002374607763  # Channel ID
