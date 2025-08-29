@@ -8,7 +8,7 @@ def get_main_menu_keyboard():
             [KeyboardButton(text="🎰 O'yin o'ynash")],
             [KeyboardButton(text="⭐ Yulduz sotib olish"), KeyboardButton(text="💰 Balansim")],
             [KeyboardButton(text="📊 Statistika"), KeyboardButton(text="💸 Pul yechish")],
-            [KeyboardButton(text="📞 Yordam")]
+            [KeyboardButton(text="🆘 Yordam")]
         ],
         resize_keyboard=True,
         one_time_keyboard=False
@@ -48,6 +48,16 @@ def get_withdrawal_keyboard():
             [InlineKeyboardButton(text="💸 500 ⭐ yechish", callback_data="withdraw_500")],
             [InlineKeyboardButton(text="💸 Barchasi", callback_data="withdraw_all")],
             [InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_menu")]
+        ]
+    )
+    return keyboard
+
+def get_support_keyboard():
+    """Yordam bo'limi klaviaturasi"""
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="💬 Admin bilan yozishish", callback_data="contact_admin")],
+            [InlineKeyboardButton(text="🔙 Asosiy menyu", callback_data="back_to_main")]
         ]
     )
     return keyboard
