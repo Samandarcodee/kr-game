@@ -73,3 +73,44 @@ class SpinResult(Base):
     
     # Relationships
     user = relationship("User", back_populates="spins")
+
+class Contest(Base):
+    __tablename__ = "contests"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    start_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    winner_1: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    winner_2: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    winner_3: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    winners_announced: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+class ContestParticipant(Base):
+    __tablename__ = "contest_participants"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id"), nullable=False)
+    contest_id: Mapped[int] = mapped_column(Integer, ForeignKey("contests.id"), default=1)
+    referrals_completed: Mapped[int] = mapped_column(Integer, default=0)
+    contest_number: Mapped[int] = mapped_column(Integer, nullable=True)
+    number_assigned_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    registered_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    is_qualified: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    # Relationships
+    user = relationship("User")
+    
+class ContestNumber(Base):
+    __tablename__ = "contest_numbers"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    contest_id: Mapped[int] = mapped_column(Integer, ForeignKey("contests.id"), default=1)
+    number_value: Mapped[int] = mapped_column(Integer, nullable=False)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id"), nullable=True)
+    assigned_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    
+    # Relationships
+    user = relationship("User")

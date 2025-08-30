@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import uvicorn
 
 from database import get_db
-from models import User, Transaction, Withdrawal, SpinResult
+from models import User, Transaction, Withdrawal, SpinResult, Contest, ContestParticipant, ContestNumber
 from utils import format_number
 
 app = FastAPI(title="Telegram Bot Admin Panel")
@@ -226,6 +226,112 @@ async def users_page(request: Request, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         print(f"Users page error: {e}")
         raise HTTPException(status_code=500, detail="Server error")
+
+@app.get("/contest", response_class=HTMLResponse)
+async def contest_page(request: Request, db: AsyncSession = Depends(get_db)):
+    """Konkurs sahifasi"""
+    try:
+        # Faol konkursni topish
+        contest_result = await db.execute(
+            select(Contest).where(
+                Contest.is_active == True,
+                Contest.end_date > datetime.utcnow()
+            )
+        )
+        active_contest = contest_result.scalar_one_or_none()
+        
+        if not active_contest:
+            return templates.TemplateResponse("admin.html", {
+                "request": request,
+                "page": "contest",
+                "active_contest": None,
+                "participants": [],
+                "qualified_participants": [],
+                "format_number": format_number
+            })
+        
+        # Barcha ishtirokchilar
+        participants_result = await db.execute(
+            select(ContestParticipant, User)
+            .join(User, ContestParticipant.user_id == User.telegram_id)
+            .where(ContestParticipant.contest_id == active_contest.id)
+            .order_by(desc(ContestParticipant.referrals_completed))
+        )
+        participants = participants_result.all()
+        
+        # Raqam olgan ishtirokchilar
+        qualified_result = await db.execute(
+            select(ContestParticipant, User)
+            .join(User, ContestParticipant.user_id == User.telegram_id)
+            .where(
+                ContestParticipant.contest_id == active_contest.id,
+                ContestParticipant.contest_number.isnot(None)
+            )
+            .order_by(ContestParticipant.contest_number)
+        )
+        qualified_participants = qualified_result.all()
+        
+        # Konkurs statistikasi
+        total_participants = len(participants)
+        qualified_count = len(qualified_participants)
+        
+        # Vaqt hisoblash
+        time_left = active_contest.end_date - datetime.utcnow()
+        days_left = time_left.days
+        hours_left = time_left.seconds // 3600
+        
+        return templates.TemplateResponse("admin.html", {
+            "request": request,
+            "page": "contest",
+            "active_contest": active_contest,
+            "participants": participants,
+            "qualified_participants": qualified_participants,
+            "total_participants": total_participants,
+            "qualified_count": qualified_count,
+            "days_left": days_left,
+            "hours_left": hours_left,
+            "format_number": format_number
+        })
+        
+    except Exception as e:
+        print(f"Contest page error: {e}")
+        raise HTTPException(status_code=500, detail="Server error")
+
+@app.post("/contest/announce_winners")
+async def announce_winners_api(request: Request, db: AsyncSession = Depends(get_db)):
+    """G'oliblarni e'lon qilish API"""
+    try:
+        form = await request.form()
+        winner_1 = int(form.get("winner_1")) if form.get("winner_1") else None
+        winner_2 = int(form.get("winner_2")) if form.get("winner_2") else None  
+        winner_3 = int(form.get("winner_3")) if form.get("winner_3") else None
+        
+        # Faol konkursni topish
+        contest_result = await db.execute(
+            select(Contest).where(
+                Contest.is_active == True,
+                Contest.end_date > datetime.utcnow()
+            )
+        )
+        active_contest = contest_result.scalar_one_or_none()
+        
+        if not active_contest:
+            return {"status": "error", "message": "Faol konkurs topilmadi"}
+        
+        # G'oliblarni saqlash
+        active_contest.winner_1 = winner_1
+        active_contest.winner_2 = winner_2  
+        active_contest.winner_3 = winner_3
+        active_contest.winners_announced = True
+        active_contest.is_active = False
+        
+        await db.commit()
+        
+        return {"status": "success", "message": "G'oliblar e'lon qilindi!"}
+        
+    except Exception as e:
+        print(f"Announce winners error: {e}")
+        return {"status": "error", "message": "Server xatolik"}
 
 if __name__ == "__main__":
     uvicorn.run(

@@ -10,6 +10,7 @@ from handlers import start, payments, game, admin
 from handlers.withdrawals import router as withdrawal_router
 from handlers.support import router as support_router
 from handlers.referral import router as referral_router
+from handlers.contest import router as contest_router
 
 # Logging sozlash
 logging.basicConfig(
@@ -32,6 +33,7 @@ dp.include_router(game.router)
 dp.include_router(withdrawal_router)
 dp.include_router(support_router)
 dp.include_router(referral_router)
+dp.include_router(contest_router)
 dp.include_router(admin.router)
 
 async def main():

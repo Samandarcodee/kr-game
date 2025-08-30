@@ -6,6 +6,7 @@ from datetime import datetime
 
 from database import get_db
 from models import User
+from config import ADMIN_IDS
 from keyboards import get_main_menu_keyboard, get_referral_keyboard
 from utils import format_number
 from config import BOT_USERNAME
@@ -132,6 +133,36 @@ async def process_referral_bonus(referrer_id: int, new_user_id: int):
             
             # Ma'lumotlarni yangilash
             await db.refresh(referrer)
+            
+            # Konkurs uchun referal hisobiga qo'shish
+            try:
+                from handlers.contest import increment_contest_referral
+                contest_number = await increment_contest_referral(referrer_id, db)
+                
+                # Agar konkurs raqami olindi bo'lsa xabar berish
+                if contest_number:
+                    contest_congrats = f"""
+🏆 <b>KONKURS RAQAMI OLINDI!</b> 🏆
+
+🎉 Tabriklaymiz! 5 ta referalingiz to'ldi!
+🎲 Sizning konkurs raqamingiz: <b>{contest_number}</b>
+
+⏰ 3 kun ichida g'oliblar e'lon qilinadi!
+🏆 1-o'rin: 1 oylik Premium
+🏆 2-o'rin: 100 yulduz  
+🏆 3-o'rin: 50 yulduz
+🏆 4-5 o'rin: 15 tadan yulduz
+
+🍀 Omad yor bo'lsin!
+                    """
+                    
+                    await bot.send_message(
+                        chat_id=referrer_id,
+                        text=contest_congrats,
+                        parse_mode="HTML"
+                    )
+            except Exception as e:
+                print(f"Konkurs integratsiyasida xatolik: {e}")
             
             # Referal qiluvchiga xabar yuborish
             from bot import bot

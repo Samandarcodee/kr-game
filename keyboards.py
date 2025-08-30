@@ -7,8 +7,8 @@ def get_main_menu_keyboard():
         keyboard=[
             [KeyboardButton(text="🎰 O'yin o'ynash")],
             [KeyboardButton(text="⭐ Yulduz sotib olish"), KeyboardButton(text="💰 Balansim")],
-            [KeyboardButton(text="📊 Statistika"), KeyboardButton(text="💸 Pul yechish")],
-            [KeyboardButton(text="👥 Do'stlarni taklif qilish")],
+            [KeyboardButton(text="🏆 Konkurs"), KeyboardButton(text="📊 Statistika")],
+            [KeyboardButton(text="💸 Pul yechish"), KeyboardButton(text="👥 Do'stlarni taklif qilish")],
             [KeyboardButton(text="🆘 Yordam")]
         ],
         resize_keyboard=True,

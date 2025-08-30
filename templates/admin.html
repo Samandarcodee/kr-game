@@ -18,6 +18,7 @@
                 <a class="nav-link" href="/"><i class="fas fa-home"></i> Bosh sahifa</a>
                 <a class="nav-link" href="/withdrawals"><i class="fas fa-money-bill-wave"></i> Chiqarishlar</a>
                 <a class="nav-link" href="/users"><i class="fas fa-users"></i> Foydalanuvchilar</a>
+                <a class="nav-link" href="/contest"><i class="fas fa-trophy"></i> Konkurs</a>
             </div>
         </div>
     </nav>
@@ -324,11 +325,242 @@
                 </div>
             </div>
         </div>
+        {% elif page == "contest" %}
+        <!-- Konkurs sahifasi -->
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fas fa-trophy"></i> Konkurs Boshqaruvi</h1>
+                <p class="text-muted">Referral konkurs statistikasi va g'oliblarni e'lon qilish</p>
+            </div>
+        </div>
+
+        {% if active_contest %}
+        <!-- Konkurs statistikasi -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Jami ishtirokchilar</h6>
+                                <h3>{{ total_participants }}</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Raqam olganlar</h6>
+                                <h3>{{ qualified_count }}</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-hashtag fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Qolgan vaqt</h6>
+                                <h3>{{ days_left }}kun {{ hours_left }}s</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Holat</h6>
+                                <h3>{% if active_contest.winners_announced %}Tugagan{% else %}Faol{% endif %}</h3>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-flag fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- G'oliblarni e'lon qilish formi -->
+        {% if not active_contest.winners_announced %}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-crown"></i> G'oliblarni e'lon qilish</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="announceWinnersForm" onsubmit="announceWinners(event)">
+                            <div class="mb-3">
+                                <label for="winner1" class="form-label">🥇 1-o'rin raqami:</label>
+                                <input type="number" class="form-control" id="winner1" name="winner_1" min="1" max="1000" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="winner2" class="form-label">🥈 2-o'rin raqami:</label>
+                                <input type="number" class="form-control" id="winner2" name="winner_2" min="1" max="1000" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="winner3" class="form-label">🥉 3-o'rin raqami:</label>
+                                <input type="number" class="form-control" id="winner3" name="winner_3" min="1" max="1000" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning"><i class="fas fa-megaphone"></i> G'oliblarni e'lon qilish</button>
+                        </form>
+                        <div id="announceResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Raqam olgan ishtirokchilar -->
+        {% if qualified_participants %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list-ol"></i> Raqam olgan ishtirokchilar ({{ qualified_count }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Raqam</th>
+                                        <th>Foydalanuvchi</th>
+                                        <th>Telegram ID</th>
+                                        <th>Referallar</th>
+                                        <th>Raqam olgan vaqt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for participant, user in qualified_participants %}
+                                    <tr>
+                                        <td><span class="badge bg-primary">{{ participant.contest_number }}</span></td>
+                                        <td>{{ user.first_name }} {% if user.username %}(@{{ user.username }}){% endif %}</td>
+                                        <td>{{ user.telegram_id }}</td>
+                                        <td>{{ participant.referrals_completed }}/5</td>
+                                        <td>{{ participant.number_assigned_at.strftime('%Y-%m-%d %H:%M') if participant.number_assigned_at else 'N/A' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Barcha ishtirokchilar -->
+        {% if participants %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-users"></i> Barcha ishtirokchilar ({{ total_participants }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Foydalanuvchi</th>
+                                        <th>Telegram ID</th>
+                                        <th>Referallar</th>
+                                        <th>Progress</th>
+                                        <th>Ro'yxatdan o'tgan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for participant, user in participants %}
+                                    <tr>
+                                        <td>{{ user.first_name }} {% if user.username %}(@{{ user.username }}){% endif %}</td>
+                                        <td>{{ user.telegram_id }}</td>
+                                        <td>{{ participant.referrals_completed }}/5</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {% if participant.referrals_completed >= 5 %}bg-success{% else %}bg-info{% endif %}" 
+                                                     style="width: {{ (participant.referrals_completed / 5) * 100 }}%">
+                                                    {{ participant.referrals_completed }}/5
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ participant.registered_at.strftime('%Y-%m-%d %H:%M') if participant.registered_at else 'N/A' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Faol konkurs yo'q -->
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Faol konkurs yo'q</h4>
+                    <p>Hozirda faol konkurs mavjud emas. Yangi konkurs boshlash uchun admin komandalaridan foydalaning.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         {% endif %}
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    async function announceWinners(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        const resultDiv = document.getElementById('announceResult');
+        
+        try {
+            const response = await fetch('/contest/announce_winners', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                resultDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check"></i> ${result.message}</div>`;
+                form.reset();
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times"></i> ${result.message}</div>`;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times"></i> Server bilan bog'lanishda xatolik!</div>`;
+        }
+    }
+    
         function approveWithdrawal(withdrawalId) {
             if (confirm('Ushbu chiqish so\'rovini tasdiqlaysizmi?')) {
                 fetch(`/approve_withdrawal/${withdrawalId}`, {
