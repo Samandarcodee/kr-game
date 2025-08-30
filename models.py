@@ -22,6 +22,7 @@ class User(Base):
     referrer_id: Mapped[int] = mapped_column(BigInteger, nullable=True)  # Kim taklif qilgan
     total_referrals: Mapped[int] = mapped_column(Integer, default=0)  # Nechta kishi taklif qilgan
     referral_earnings: Mapped[int] = mapped_column(Integer, default=0)  # Referal orqali topgan yulduzlar
+    free_spins: Mapped[int] = mapped_column(Integer, default=0)  # Bepul spinlar
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     

@@ -30,14 +30,17 @@ def get_star_purchase_keyboard():
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-def get_spin_keyboard():
+def get_spin_keyboard(free_spins=0):
     """Spin o'ynash klaviaturasi"""
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🎰 Spin (1 ⭐)", callback_data="spin_1")],
-            [InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_menu")]
-        ]
-    )
+    buttons = []
+    
+    if free_spins > 0:
+        buttons.append([InlineKeyboardButton(text=f"🎁 BEPUL SPIN ({free_spins} qoldi)", callback_data="spin_1")])
+    
+    buttons.append([InlineKeyboardButton(text="🎰 Spin (1 ⭐)", callback_data="spin_1")])
+    buttons.append([InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_menu")])
+    
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
 def get_withdrawal_keyboard():

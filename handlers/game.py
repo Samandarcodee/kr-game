@@ -24,17 +24,19 @@ async def game_menu(message: Message):
             await message.answer("❌ Xatolik yuz berdi. /start tugmasini bosing.")
             return
         
+        free_spins_text = f" | 🎁 Bepul: {user.free_spins}" if user.free_spins > 0 else ""
+        
         game_text = f"""
 🎰 <b>O'YIN</b> 🎰
 
-💰 <b>Balans:</b> {format_number(user.stars)} ⭐
+💰 <b>Balans:</b> {format_number(user.stars)} ⭐{free_spins_text}
 
 🍀 <b>Omadingizni sinab ko'ring!</b>
         """
         
         game_msg = await message.answer(
             game_text,
-            reply_markup=get_spin_keyboard(),
+            reply_markup=get_spin_keyboard(user.free_spins),
             parse_mode="HTML"
         )
         
@@ -60,8 +62,11 @@ async def process_spin(callback: CallbackQuery):
                 await callback.answer("❌ Foydalanuvchi topilmadi", show_alert=True)
                 return
             
-            # Balansni tekshirish
-            if user.stars < bet_amount:
+            # Bepul spin yoki oddiy spin tekshiruvi
+            using_free_spin = False
+            if user.free_spins > 0:
+                using_free_spin = True
+            elif user.stars < bet_amount:
                 await callback.answer(
                     f"❌ Balansda yetarli yulduz yo'q!\n"
                     f"Kerak: {bet_amount} ⭐\n"
@@ -78,7 +83,10 @@ async def process_spin(callback: CallbackQuery):
             )
             
             # Balansni yangilash
-            user.stars -= bet_amount
+            if using_free_spin:
+                user.free_spins -= 1  # Bepul spinni kamaytirish
+            else:
+                user.stars -= bet_amount  # Oddiy to'lov
             
             if result_type == "win":
                 user.stars += win_amount
@@ -114,18 +122,23 @@ async def process_spin(callback: CallbackQuery):
                 result_type, 
                 multiplier, 
                 user.stars,
-                symbols
+                symbols,
+                using_free_spin,
+                user.free_spins
             )
             
     except Exception as e:
         await callback.answer("❌ Xatolik yuz berdi", show_alert=True)
         print(f"Spin error: {e}")
 
-async def show_spin_result(callback, bet_amount, win_amount, result_type, multiplier, new_balance, symbols):
+async def show_spin_result(callback, bet_amount, win_amount, result_type, multiplier, new_balance, symbols, was_free_spin=False, remaining_free_spins=0):
     """Spin natijasini chiroyli ko'rsatish"""
     
     # Animatsiyali spin natijasi
     symbols_display = f"🎰 【 {symbols[0]} 】【 {symbols[1]} 】【 {symbols[2]} 】 🎰"
+    
+    spin_cost_text = "🎁 Bepul spin ishlatildi" if was_free_spin else f"💸 Narx: {bet_amount} ⭐"
+    free_spins_text = f"\n🎁 Qolgan bepul spinlar: {remaining_free_spins}" if remaining_free_spins > 0 else ""
     
     if result_type == "win":
         # Yutish natijasi - faqat zarur ma'lumotlar
@@ -137,6 +150,7 @@ async def show_spin_result(callback, bet_amount, win_amount, result_type, multip
 {symbols_display}
 
 🎉 <b>YUTDINGIZ!</b> +{win_amount} ⭐
+{spin_cost_text}{free_spins_text}
         """
     else:
         # Yutqazish natijasi - faqat zarur ma'lumotlar
@@ -147,12 +161,13 @@ async def show_spin_result(callback, bet_amount, win_amount, result_type, multip
 
 {symbols_display}
 
-😔 <b>Yutqazdingiz</b> -{bet_amount} ⭐
+😔 <b>Yutqazdingiz</b>
+{spin_cost_text}{free_spins_text}
         """
     
     await callback.message.edit_text(
         result_text,
-        reply_markup=get_spin_keyboard(),
+        reply_markup=get_spin_keyboard(remaining_free_spins),
         parse_mode="HTML"
     )
     await callback.answer()
@@ -170,17 +185,19 @@ async def spin_again(callback: CallbackQuery):
             await callback.answer("❌ Foydalanuvchi topilmadi", show_alert=True)
             return
         
+        free_spins_text = f" | 🎁 Bepul: {user.free_spins}" if user.free_spins > 0 else ""
+        
         game_text = f"""
-🎰 <b>SLOT MACHINE O'YIN</b>
+🎰 <b>O'YIN</b> 🎰
 
-⭐ Joriy balans: <b>{format_number(user.stars)} yulduz</b>
+💰 <b>Balans:</b> {format_number(user.stars)} ⭐{free_spins_text}
 
-Yana spin qilmoqchimisiz? Har bir spin 1 ⭐
+🍀 <b>Omadingizni sinab ko'ring!</b>
         """
         
         await callback.message.edit_text(
             game_text,
-            reply_markup=get_spin_keyboard(),
+            reply_markup=get_spin_keyboard(user.free_spins),
             parse_mode="HTML"
         )
         await callback.answer()
