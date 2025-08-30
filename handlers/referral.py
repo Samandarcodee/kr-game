@@ -84,7 +84,9 @@ async def copy_referral_link(callback: CallbackQuery):
         await callback.answer("✅ Link yuqorida!", show_alert=False)
 
 async def process_referral_bonus(referrer_id: int, new_user_id: int):
-    """Referal bonusini berish"""
+    """Referal bonusini berish - faqat to'lov amalga oshirilgandan keyin"""
+    from sqlalchemy import update
+    
     async for db in get_db():
         try:
             # Referal qiluvchini topish
@@ -94,6 +96,7 @@ async def process_referral_bonus(referrer_id: int, new_user_id: int):
             referrer = result.scalar_one_or_none()
             
             if not referrer:
+                print(f"Referrer {referrer_id} topilmadi")
                 return
             
             # Yangi foydalanuvchini tekshirish
@@ -103,6 +106,12 @@ async def process_referral_bonus(referrer_id: int, new_user_id: int):
             new_user = new_user_result.scalar_one_or_none()
             
             if not new_user:
+                print(f"New user {new_user_id} topilmadi")
+                return
+            
+            # Faqat yangi user yulduz sotib olgan bo'lsa bonus berish
+            if new_user.total_deposited == 0:
+                print(f"User {new_user_id} hali yulduz sotib olmagan")
                 return
             
             # Referal bonusini berish (5 yulduz)
@@ -121,24 +130,48 @@ async def process_referral_bonus(referrer_id: int, new_user_id: int):
             
             await db.commit()
             
+            # Ma'lumotlarni yangilash
+            await db.refresh(referrer)
+            
             # Referal qiluvchiga xabar yuborish
             from bot import bot
             try:
                 await bot.send_message(
                     chat_id=referrer_id,
                     text=f"""
-🎉 <b>REFERAL BONUSI!</b> 🎉
+🎉 <b>REFERAL BONUSI OLINDI!</b> 🎉
 
-👤 Yangi do'stingiz botga qo'shildi!
-💰 Bonus: <b>{bonus_amount} ⭐</b>
-🎁 Jami referal daromadingiz: <b>{format_number(referrer.referral_earnings + bonus_amount)} ⭐</b>
+👤 Do'stingiz {new_user.first_name} yulduz sotib oldi!
+💰 Sizga bonus: <b>{bonus_amount} ⭐</b>
+🎁 Jami referal daromadingiz: <b>{format_number(referrer.referral_earnings)} ⭐</b>
 
-🚀 Yana do'stlar taklif qiling va ko'proq yulduz yutib oling!
+🚀 Yana do'stlar taklif qiling va ko'proq bonus oling!
                     """,
                     parse_mode="HTML"
                 )
             except Exception as e:
                 print(f"Referal bonus xabarini yuborishda xatolik: {e}")
+            
+            # Adminga ham xabar yuborish
+            admin_message = f"""
+💎 <b>REFERAL BONUS BERILDI</b>
+
+👤 <b>Taklif qiluvchi:</b> {referrer.first_name} (ID: {referrer_id})
+👥 <b>Yangi user:</b> {new_user.first_name} (ID: {new_user_id})
+💰 <b>Bonus miqdori:</b> {bonus_amount} ⭐
+📊 <b>Jami referallar:</b> {referrer.total_referrals}
+📅 <b>Vaqt:</b> {datetime.now().strftime('%d.%m.%Y %H:%M')}
+            """
+            
+            for admin_id in ADMIN_IDS:
+                try:
+                    await bot.send_message(
+                        chat_id=admin_id,
+                        text=admin_message,
+                        parse_mode="HTML"
+                    )
+                except Exception as e:
+                    print(f"Admin {admin_id} ga referal xabarini yuborishda xatolik: {e}")
                 
         except Exception as e:
             print(f"Referal bonusini qayta ishlashda xatolik: {e}")

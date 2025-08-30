@@ -10,6 +10,7 @@ from keyboards import get_main_menu_keyboard
 from utils import get_user_rank, format_number
 from utils_captcha import get_captcha_message
 from utils_subscription import check_subscription, get_subscription_message, get_subscription_keyboard
+from config import ADMIN_IDS
 
 router = Router()
 
@@ -26,6 +27,10 @@ async def start_handler(message: Message, command: CommandObject = None):
     
     async for db in get_db():
         user = await get_or_create_user(db, message.from_user, referrer_id)
+        
+        # Agar yangi user va referrer mavjud bo'lsa, adminga xabar
+        if referrer_id and hasattr(user, '_is_new_user') and user._is_new_user:
+            await notify_admin_new_referral(message.bot, referrer_id, user)
         
         # Agar user yangi bo'lsa yoki captcha o'tmagan bo'lsa
         if not hasattr(user, 'captcha_passed') or not user.captcha_passed:
@@ -71,16 +76,61 @@ async def get_or_create_user(db: AsyncSession, telegram_user, referrer_id=None) 
             telegram_id=telegram_user.id,
             username=telegram_user.username,
             first_name=telegram_user.first_name or "Noma'lum",
-            referrer_id=referrer_id,
-            last_name=telegram_user.last_name
+            last_name=telegram_user.last_name,
+            referrer_id=referrer_id
         )
         # Yangi user uchun captcha_passed = False
         user.captcha_passed = False
+        user._is_new_user = True  # Yangi user ekanligini belgilash
         db.add(user)
         await db.commit()
+    else:
+        user._is_new_user = False
         await db.refresh(user)
     
     return user
+
+async def notify_admin_new_referral(bot, referrer_id: int, new_user: User):
+    """Adminga yangi referal haqida xabar yuborish"""
+    try:
+        # Referal qiluvchini topish
+        async for db in get_db():
+            result = await db.execute(
+                select(User).where(User.telegram_id == referrer_id)
+            )
+            referrer = result.scalar_one_or_none()
+            
+            if not referrer:
+                return
+            
+            # Adminga xabar
+            admin_message = f"""
+🎉 <b>YANGI REFERAL!</b>
+
+👤 <b>Taklif qiluvchi:</b> {referrer.first_name}
+🆔 <b>Referer ID:</b> {referrer_id}
+
+👥 <b>Yangi foydalanuvchi:</b> {new_user.first_name}
+🆔 <b>Yangi user ID:</b> {new_user.telegram_id}
+
+📅 <b>Vaqt:</b> {new_user.created_at.strftime('%d.%m.%Y %H:%M')}
+
+💡 Yangi user yulduz sotib olib o'ynaganidan keyin 5 ⭐ bonus beriladi.
+            """
+            
+            # Barcha adminlarga yuborish
+            for admin_id in ADMIN_IDS:
+                try:
+                    await bot.send_message(
+                        chat_id=admin_id,
+                        text=admin_message,
+                        parse_mode="HTML"
+                    )
+                except Exception as e:
+                    print(f"Admin {admin_id} ga referal xabarini yuborishda xatolik: {e}")
+                    
+    except Exception as e:
+        print(f"Referal xabarini yuborishda xatolik: {e}")
 
 async def show_main_menu(message: Message, user: User):
     """Asosiy menyuni ko'rsatish"""
