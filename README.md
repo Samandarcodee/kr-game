@@ -153,6 +153,44 @@ The admin panel is available at `https://your-app.railway.app` and provides:
 - 🏆 Contest management
 - 📨 Mass messaging system
 
+## Troubleshooting
+
+### Common Issues
+
+1. **"Token is invalid!" Error**
+   - This means the `BOT_TOKEN` environment variable is not set or invalid
+   - Go to Railway dashboard → Variables → Add `BOT_TOKEN` with your bot token from @BotFather
+   - Make sure the token is valid and not the placeholder value
+
+2. **Missing Environment Variables**
+   - The startup script will check for required variables
+   - Set all required variables in Railway dashboard
+   - Required variables: `BOT_TOKEN`, `ADMIN_IDS`, `DATABASE_URL`, `PAYMENT_PROVIDER_TOKEN`
+
+3. **Database Connection Issues**
+   - Ensure PostgreSQL database is added to your Railway project
+   - `DATABASE_URL` should be auto-set by Railway
+   - Check Railway logs for database connection errors
+
+4. **Admin Panel Only Mode**
+   - If you want to test admin panel without bot, use: `python admin_only.py`
+   - This requires only `DATABASE_URL` to be set
+
+### Getting Bot Token
+
+1. Message @BotFather on Telegram
+2. Send `/newbot` command
+3. Follow the instructions to create a bot
+4. Copy the token and set it as `BOT_TOKEN` in Railway
+
+### Getting Admin IDs
+
+1. Message your bot
+2. Send any message
+3. Visit: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+4. Find your user ID in the response
+5. Set `ADMIN_IDS` as comma-separated list of admin IDs
+
 ## Support
 
 For issues and questions:
@@ -160,6 +198,7 @@ For issues and questions:
 2. Verify all environment variables are set correctly
 3. Ensure your bot token is valid
 4. Check database connectivity
+5. Use the startup script for better error messages
 
 ## License
 

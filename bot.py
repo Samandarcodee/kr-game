@@ -20,11 +20,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Bot va Dispatcher yaratish
-bot = Bot(
-    token=BOT_TOKEN,
-    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-)
+bot = None
 dp = Dispatcher()
+
+def create_bot():
+    """Bot yaratish funktsiyasi"""
+    global bot
+    if bot is None:
+        bot = Bot(
+            token=BOT_TOKEN,
+            default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        )
+    return bot
 
 # Routerlarni ro'yxatdan o'tkazish
 dp.include_router(start.router)
@@ -39,18 +46,28 @@ dp.include_router(admin.router)
 async def main():
     """Asosiy funktsiya"""
     try:
+        # Bot token tekshirish
+        if not BOT_TOKEN or BOT_TOKEN == "your_bot_token_here":
+            logger.error("BOT_TOKEN environment variable is not set or invalid!")
+            logger.error("Please set BOT_TOKEN in Railway environment variables")
+            return
+        
+        # Botni yaratish
+        bot_instance = create_bot()
+        
         # Ma'lumotlar bazasini ishga tushirish
         await init_db()
         logger.info("Database initialized successfully")
         
         # Botni ishga tushirish
         logger.info("Starting bot...")
-        await dp.start_polling(bot, skip_updates=True)
+        await dp.start_polling(bot_instance, skip_updates=True)
         
     except Exception as e:
         logger.error(f"Error starting bot: {e}")
     finally:
-        await bot.session.close()
+        if bot:
+            await bot.session.close()
 
 if __name__ == "__main__":
     try:

@@ -414,15 +414,16 @@ async def send_message_to_all_api(
         """
         
         # Bot instance yaratish (bot.py dan import qilish)
-        from bot import bot
+        from bot import create_bot
         
+        bot_instance = create_bot()
         sent_count = 0
         error_count = 0
         
         # Har bir foydalanuvchiga xabar yuborish
         for user in users:
             try:
-                await bot.send_message(
+                await bot_instance.send_message(
                     chat_id=user.telegram_id,
                     text=full_message,
                     parse_mode="HTML"

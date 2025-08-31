@@ -6,7 +6,11 @@ from admin_panel import app
 
 async def run_bot():
     """Bot ishga tushirish"""
-    await bot_main()
+    try:
+        await bot_main()
+    except Exception as e:
+        print(f"Bot error: {e}")
+        # Continue running admin panel even if bot fails
 
 async def run_admin_panel():
     """Admin panel ishga tushirish"""
