@@ -24,6 +24,11 @@ async def health_check():
     """Health check endpoint for Railway"""
     return {"status": "healthy", "message": "Bot Stars application is running"}
 
+@app.get("/ping")
+async def ping():
+    """Simple ping endpoint for health checks"""
+    return {"status": "ok", "ping": "pong"}
+
 @app.get("/", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     """Admin panel asosiy sahifa"""
