@@ -9,7 +9,7 @@ ADMIN_IDS = [int(id_) for id_ in os.getenv("ADMIN_IDS", "123456789").split(",")]
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/telegram_bot")
 
 # Payment configuration
-PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_PROVIDER_TOKEN", "your_payment_provider_token")
+PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_PROVIDER_TOKEN", None)
 
 # Star prices (in Telegram Stars)
 STAR_PACKAGES = {

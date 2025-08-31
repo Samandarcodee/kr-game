@@ -17,16 +17,28 @@ def check_environment():
         'BOT_TOKEN': 'Telegram bot token from @BotFather',
         'ADMIN_IDS': 'Comma-separated admin Telegram IDs',
         'DATABASE_URL': 'PostgreSQL database URL (auto-set by Railway)',
+    }
+    
+    optional_vars = {
         'PAYMENT_PROVIDER_TOKEN': 'Telegram Stars payment provider token'
     }
     
     missing_vars = []
     
+    # Check required variables
     for var, description in required_vars.items():
         value = os.getenv(var)
         if not value or value in ['your_bot_token_here', '123456789']:
             print(f"❌ {var}: {description} - NOT SET")
             missing_vars.append(var)
+        else:
+            print(f"✅ {var}: Set")
+    
+    # Check optional variables
+    for var, description in optional_vars.items():
+        value = os.getenv(var)
+        if not value or value in ['your_payment_provider_token']:
+            print(f"⚠️  {var}: {description} - NOT SET (Optional)")
         else:
             print(f"✅ {var}: Set")
     
