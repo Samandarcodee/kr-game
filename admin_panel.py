@@ -1,21 +1,28 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 import uvicorn
+import asyncio
 
 from database import get_db
 from models import User, Transaction, Withdrawal, SpinResult, Contest, ContestParticipant, ContestNumber
 from utils import format_number
+from config import ADMIN_IDS
 
 app = FastAPI(title="Telegram Bot Admin Panel")
 
 # Templates va static fayllar
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Railway"""
+    return {"status": "healthy", "message": "Bot Stars application is running"}
 
 @app.get("/", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
@@ -333,10 +340,128 @@ async def announce_winners_api(request: Request, db: AsyncSession = Depends(get_
         print(f"Announce winners error: {e}")
         return {"status": "error", "message": "Server xatolik"}
 
+@app.get("/messages", response_class=HTMLResponse)
+async def messages_page(request: Request, db: AsyncSession = Depends(get_db)):
+    """Xabarlar sahifasi"""
+    try:
+        # Jami foydalanuvchilar soni
+        total_users = await db.scalar(select(func.count(User.id))) or 0
+        
+        return templates.TemplateResponse("admin.html", {
+            "request": request,
+            "page": "messages",
+            "total_users": total_users,
+            "format_number": format_number
+        })
+        
+    except Exception as e:
+        print(f"Messages page error: {e}")
+        raise HTTPException(status_code=500, detail="Server error")
+
+@app.post("/send_message_to_all")
+async def send_message_to_all_api(
+    request: Request,
+    title: str = Form(...),
+    text: str = Form(...),
+    type: str = Form(...),
+    active_only: bool = Form(False),
+    db: AsyncSession = Depends(get_db)
+):
+    """Barcha foydalanuvchilarga xabar yuborish API"""
+    try:
+        start_time = datetime.now()
+        
+        # Foydalanuvchilarni olish
+        if active_only:
+            # Faqat faol foydalanuvchilar (son 7 kunda yaratilgan yoki tranzaksiya qilgan)
+            seven_days_ago = datetime.utcnow() - timedelta(days=7)
+            users_result = await db.execute(
+                select(User).where(
+                    (User.created_at >= seven_days_ago) |
+                    (User.telegram_id.in_(
+                        select(Transaction.user_id).where(Transaction.created_at >= seven_days_ago)
+                    ))
+                )
+            )
+        else:
+            # Barcha foydalanuvchilar
+            users_result = await db.execute(select(User))
+        
+        users = users_result.scalars().all()
+        
+        if not users:
+            return JSONResponse({
+                "status": "error",
+                "message": "Yuborish uchun foydalanuvchilar topilmadi"
+            })
+        
+        # Xabar matnini tayyorlash
+        message_type_emoji = {
+            "announcement": "📢",
+            "update": "🔄", 
+            "promotion": "🎁",
+            "maintenance": "🔧",
+            "other": "📝"
+        }
+        
+        emoji = message_type_emoji.get(type, "📝")
+        full_message = f"""
+{emoji} <b>{title}</b> {emoji}
+
+{text}
+
+📅 <i>Yuborilgan vaqt: {datetime.now().strftime('%d.%m.%Y %H:%M')}</i>
+        """
+        
+        # Bot instance yaratish (bot.py dan import qilish)
+        from bot import bot
+        
+        sent_count = 0
+        error_count = 0
+        
+        # Har bir foydalanuvchiga xabar yuborish
+        for user in users:
+            try:
+                await bot.send_message(
+                    chat_id=user.telegram_id,
+                    text=full_message,
+                    parse_mode="HTML"
+                )
+                sent_count += 1
+                
+                # Rate limiting - har 50 xabardan keyin 1 soniya kutish
+                if sent_count % 50 == 0:
+                    await asyncio.sleep(1)
+                    
+            except Exception as e:
+                print(f"Xabar yuborishda xatolik (user {user.telegram_id}): {e}")
+                error_count += 1
+                continue
+        
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        
+        return JSONResponse({
+            "status": "success",
+            "message": "Xabar muvaffaqiyatli yuborildi",
+            "sent_count": sent_count,
+            "error_count": error_count,
+            "total_users": len(users),
+            "duration": round(duration, 2)
+        })
+        
+    except Exception as e:
+        print(f"Send message to all error: {e}")
+        return JSONResponse({
+            "status": "error",
+            "message": f"Server xatolik: {str(e)}"
+        })
+
 if __name__ == "__main__":
+    import os
     uvicorn.run(
         "admin_panel:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True
+        port=int(os.getenv("PORT", 8000)),
+        reload=False
     )
