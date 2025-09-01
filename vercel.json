@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "startup_simple.py",
+      "src": "api/vercel.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "startup_simple.py"
+      "dest": "/api/vercel.py"
     }
   ],
   "env": {

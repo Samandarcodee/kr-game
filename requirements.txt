@@ -1,9 +1,14 @@
-aiogram>=3.22.0
-asyncpg>=0.30.0
+# Core dependencies
 fastapi>=0.116.1
+uvicorn>=0.35.0
+sqlalchemy>=2.0.43
+asyncpg>=0.30.0
+aiogram>=3.22.0
+
+# Template and static files
 jinja2>=3.1.6
 python-multipart>=0.0.20
-sqlalchemy>=2.0.43
-uvicorn>=0.35.0
+
+# Environment and utilities
 python-dotenv>=1.0.0
 aiofiles>=23.2.1
